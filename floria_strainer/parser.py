@@ -1,9 +1,9 @@
 import pandas as pd
 
 
-def parse_vartigs(filename: str) -> dict:
+def parse_haplosets(filename: str, hapq_cut: int = 15) -> tuple[dict, dict]:
     """
-    Read a vartigs file and return a dictionary with the values.
+    Read a haplosets file and return a dictionary with the values, as well as reads within a haploset with a HAPQ > threshold.
 
     Parameters
     ----------
@@ -13,19 +13,36 @@ def parse_vartigs(filename: str) -> dict:
     Returns
     -------
     dict
-        A dictionary with the values in the file.
+        A dictionary with the haploset metadata.
+    dict
+        {
+            contig (str): {
+                read_name(str): haploset(str)
+            }
+        }
+        A dictionary with the reads withing each haploset passing threshold
     """
-    vartigs = {"contig": [], "haploset": [], "HAPQ": []}
+    haplosets = {"contig": [], "haploset": [], "HAPQ": []}
+    haqp_sup = False
+    read_dict = {}
     with open(filename, "r") as f:
         for line in f:
             if line.startswith(">"):
                 lsplit = line.rstrip()[1:].split("\t")
-                vartigs["contig"].append(lsplit[1].split(":")[1])
-                vartigs["haploset"].append(lsplit[0].split(".")[0])
-                vartigs["HAPQ"].append(int(lsplit[6].split(":")[1]))
-            else:
-                continue
-    return vartigs
+                hapq = int(lsplit[6].split(":")[1])
+                haploset = lsplit[0].split(".")[0]
+                contig = lsplit[1].split(":")[1]
+                haplosets["contig"].append(contig)
+                haplosets["haploset"].append(haploset)
+                haplosets["HAPQ"].append(hapq)
+                if hapq > hapq_cut:
+                    haqp_sup = True
+                    read_dict.setdefault(contig, {})
+                else:
+                    haqp_sup = False
+            elif haqp_sup:
+                read_dict[contig][line.split()[0]] = haploset
+    return haplosets, read_dict
 
 
 def parse_vartig_info(filename: str) -> dict:
