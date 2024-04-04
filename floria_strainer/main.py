@@ -3,18 +3,18 @@ import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score
 from collections import ChainMap
-import logging
+from floria_strainer import logger
 import pysam
 import os
 
 from floria_strainer.parser import (
-    parse_vartigs,
+    parse_haplosets,
     parse_vartig_info,
     parse_floria_contig_ploidy,
 )
 
 
-def parse_files(floria_outdir: str) -> tuple[pd.DataFrame, int]:
+def parse_files(floria_outdir: str) -> tuple[pd.DataFrame, int, dict]:
 
     cp = parse_floria_contig_ploidy(
         os.path.join(floria_outdir, "contig_ploidy_info.tsv")
@@ -23,25 +23,30 @@ def parse_files(floria_outdir: str) -> tuple[pd.DataFrame, int]:
     contigs = cp["contig"].unique().tolist()
     nb_strains = round(cp["average_straincount_min15hapq"].mean())
 
-    vartigs_files = [
-        os.path.join(floria_outdir, contig, f"{contig}.vartigs") for contig in contigs
+    haplosets_files = [
+        os.path.join(floria_outdir, contig, f"{contig}.haplosets") for contig in contigs
     ]
     vartig_info_files = [
         os.path.join(floria_outdir, contig, "vartig_info.txt") for contig in contigs
     ]
 
-    parsed_vartigs = [parse_vartigs(vartig_file) for vartig_file in vartigs_files]
+    parsed_haplosets = [
+        parse_haplosets(haplosets_file) for haplosets_file in haplosets_files
+    ]
+
+    haplosets, read_dicts = zip(*parsed_haplosets)
 
     parsed_vartig_info = [
         parse_vartig_info(vartig_info_file) for vartig_info_file in vartig_info_files
     ]
 
-    vartigs_df = pd.DataFrame.from_dict(dict(ChainMap(*parsed_vartigs)))
+    haplosets_df = pd.DataFrame.from_dict(dict(ChainMap(*haplosets)))
     vartig_info_df = pd.DataFrame.from_dict(dict(ChainMap(*parsed_vartig_info)))
+    read_dict = dict(ChainMap(*read_dicts))
 
-    df = pd.merge(vartigs_df, vartig_info_df, on=["contig", "haploset"])
+    df = pd.merge(haplosets_df, vartig_info_df, on=["contig", "haploset"])
 
-    return df, nb_strains
+    return df, nb_strains, read_dict
 
 
 def compute_gmm(obs: np.array, n_components: int) -> tuple[np.array, np.array]:
@@ -62,7 +67,7 @@ def compute_gmm(obs: np.array, n_components: int) -> tuple[np.array, np.array]:
         The labels and the maximum probability for each observation.
     """
     if n_components == 0:
-        logging.warning(
+        logger.warning(
             "The number of components is 0. The optimal number of components will be selected using the Silhouette score."
         )
 
@@ -80,7 +85,7 @@ def compute_gmm(obs: np.array, n_components: int) -> tuple[np.array, np.array]:
 
     elif n_components < 2:
         raise ValueError("The number of components must be at least 2.")
-    gmm = GaussianMixture(n_components=n_components)
+    gmm = GaussianMixture(n_components=n_components, random_state=42)
     gmm.fit(obs)
     labels = gmm.predict(obs)
     max_proba = np.max(gmm.predict_proba(obs), axis=1)
@@ -159,7 +164,7 @@ def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int) 
 
 
 def write_bam_split(
-    inbam: str, basename: str, haplostrain: dict, strains: list
+    inbam: str, basename: str, haplostrain: dict, strains: list, read_dict: dict
 ) -> None:
     """
     Write the BAM files for each strain.
@@ -174,26 +179,41 @@ def write_bam_split(
         The haplostrain dictionary.
     strains : list
         The strains to write the BAM files for.
+    read_dict : dict
+        The read dictionary with the references as keys for the reads as keys, and the haplotag as value.
     """
-
-    bam = pysam.AlignmentFile(inbam, "rb")
+    no_haploset = False
     for strain in strains:
+        logger.info(
+            f"Writing the BAM files in split mode for strain {strain} to {basename}.{strain}.bam"
+        )
+        bam = pysam.AlignmentFile(inbam, "rb")
         with pysam.AlignmentFile(
             f"{basename}.{strain}.bam", "wb", template=bam
         ) as outbam:
             for read in bam:
                 refname = read.reference_name
-                if refname in haplostrain:
+                if refname in read_dict:
                     try:
-                        h = read.get_tag("HP")
-                        if haplostrain[refname][h] == strain:
+                        haplotag = read_dict[refname][read.query_name]
+                        read.set_tag("HP", haplotag)
+                        no_haploset = False
+                    except KeyError:
+                        no_haploset = True
+                        pass
+                if refname in haplostrain and not no_haploset:
+                    try:
+                        if haplostrain[refname][haplotag] == strain:
+                            read.set_tag("ST", haplostrain[refname][haplotag])
                             outbam.write(read)
                     except KeyError:
                         pass
+                elif no_haploset:
+                    outbam.write(read)
     bam.close()
 
 
-def write_bam(inbam: str, outbam: str, haplostrain: dict) -> None:
+def write_bam(inbam: str, outbam: str, haplostrain: dict, read_dict: dict) -> None:
     """
     Write the BAM files for each strain.
 
@@ -205,27 +225,64 @@ def write_bam(inbam: str, outbam: str, haplostrain: dict) -> None:
         The output BAM file.
     haplostrain : dict
         The haplostrain dictionary.
+    read_dict : dict
+        The read dictionary with the references as keys for the reads as keys, and the haplotag as value.
     """
-
+    logger.info(f"Writing the BAM file in tag mode to {outbam}.")
+    no_haploset = False
     with pysam.AlignmentFile(inbam, "rb") as bam:
-        with pysam.AlignmentFile(outbam, "wb", template=bam) as bamout:
+        with pysam.AlignmentFile(outbam, "wb", template=bam) as outbam:
             for read in bam:
                 refname = read.reference_name
-                if refname in haplostrain:
+                if refname in read_dict:
                     try:
-                        h = read.get_tag("HP")
-                        read.set_tag("ST", haplostrain[refname][h])
+                        haplotag = read_dict[refname][read.query_name]
+                        read.set_tag("HP", haplotag)
+                        no_haploset = False
+                    except KeyError:
+                        no_haploset = True
+                        pass
+                if refname in haplostrain and not no_haploset:
+                    try:
+                        read.set_tag("ST", haplostrain[refname][haplotag])
                     except KeyError:
                         pass
-                bamout.write(read)
+                outbam.write(read)
 
 
-def strainer(floria_outdir, nb_strains: int, hapq_cut: int, sp_cut: float):
-    fl_df, fl_nb_strains = parse_files(floria_outdir)
+def strainer(
+    floria_outdir,
+    nb_strains: int,
+    hapq_cut: int,
+    sp_cut: float,
+    bam: str,
+    mode: str,
+    basename: str,
+):
+    fl_df, fl_nb_strains, read_dict = parse_files(floria_outdir)
     if nb_strains == 0:
         nb_strains = fl_nb_strains
-    fl_df_processed, strains = process_df(
+    fl_processed, strains = process_df(
         df=fl_df, hapq_cut=hapq_cut, sp_cut=sp_cut, nb_strains=nb_strains
     )
 
-    logging.info(f"Strains: {strains}")
+    logger.info(
+        f"{len(strains)} strains were found: {', '.join([str(i) for i in strains])}"
+    )
+    if mode == "tag":
+        write_bam(
+            inbam=bam,
+            outbam=f"{basename}.bam",
+            haplostrain=fl_processed,
+            read_dict=read_dict,
+        )
+    elif mode == "split":
+        write_bam_split(
+            inbam=bam,
+            basename=basename,
+            haplostrain=fl_processed,
+            strains=strains,
+            read_dict=read_dict,
+        )
+    else:
+        raise ValueError("The mode must be either 'tag' or 'split'.")
