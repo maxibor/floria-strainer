@@ -1,27 +1,45 @@
 import os
-from floria_strainer.parser import parse_vartigs, parse_vartig_info
+import pytest
+from floria_strainer.parser import parse_haplosets, parse_vartig_info
 
 test_dir = os.path.join(os.path.dirname(__file__))
 data_dir = os.path.join(test_dir, "data")
+contig_dir = os.path.join(data_dir, "floria_out_dir", "NZ_CP081897.1")
 
 
-def test_parse_vartigs():
-    vartigs = parse_vartigs(os.path.join(data_dir, "NZ_CP081897.1.vartigs"))
+def test_parse_haplosets():
+    haplosets, read_dict = parse_haplosets(
+        os.path.join(contig_dir, "NZ_CP081897.1.haplosets"), hapq_cut=15
+    )
 
-    assert isinstance(vartigs, dict)
-    assert "contig" in vartigs
-    assert "haploset" in vartigs
-    assert "HAPQ" in vartigs
+    # Checking haploset dictionary
+    assert isinstance(haplosets, dict)
+    assert "contig" in haplosets
+    assert "haploset" in haplosets
+    assert "HAPQ" in haplosets
 
-    assert len(vartigs["contig"]) == len(vartigs["haploset"]) == len(vartigs["HAPQ"])
+    assert (
+        len(haplosets["contig"]) == len(haplosets["haploset"]) == len(haplosets["HAPQ"])
+    )
 
-    assert vartigs["contig"][0] == "NZ_CP081897.1"
-    assert vartigs["haploset"][0] == "HAP0"
-    assert vartigs["HAPQ"][0] == 16
+    assert haplosets["contig"][0] == "NZ_CP081897.1"
+    assert haplosets["haploset"][0] == "HAP0"
+    assert haplosets["HAPQ"][0] == 16
+
+    # Checking reads dictionary
+    print(haplosets)
+    print(read_dict)
+
+    assert isinstance(read_dict, dict)
+    assert read_dict["NZ_CP081897.1"]["NZ_CP081897.1-865804"] == "HAP0"
+    assert read_dict["NZ_CP081897.1"]["NZ_CP081894.1-245850"] == "HAP10"
+    # Checking that haplosets with HAPQ < hapq_cut are not in the read_dict
+    with pytest.raises(KeyError):
+        assert read_dict["NZ_CP081897.1"]["NZ_CP081896.1-334880"] == "HAP325"
 
 
 def test_parse_vartig_info():
-    vartig_info = parse_vartig_info(os.path.join(data_dir, "vartig_info_short.txt"))
+    vartig_info = parse_vartig_info(os.path.join(contig_dir, "vartig_info_short.txt"))
 
     assert isinstance(vartig_info, dict)
 
