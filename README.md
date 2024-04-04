@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"><img src="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"></a>
-    
+    <br>
    <img src="assets/img/floria_strainer_logo.png" width="400">
 </p>
 
