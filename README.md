@@ -1,4 +1,11 @@
-# floria-strainer
+<p align="center">
+    <a href="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"><img src="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"></a>
+   <img src="assets/img/floria_strainer_logo.png" width="400">
+</p>
+
+---
+
+**floria-strainer**: strains out genomes from [floria](https://github.com/bluenote-1577/floria).
 
 ## Introduction
 
