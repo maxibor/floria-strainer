@@ -35,7 +35,7 @@ def parse_haplosets(filename: str, hapq_cut: int = 15) -> tuple[dict, dict]:
                 haplosets["contig"].append(contig)
                 haplosets["haploset"].append(haploset)
                 haplosets["HAPQ"].append(hapq)
-                if hapq > hapq_cut:
+                if hapq >= hapq_cut:
                     haqp_sup = True
                     read_dict.setdefault(contig, {})
                 else:

@@ -41,7 +41,7 @@ def test_parse_files(parsed_files):
 def test_process_df(parsed_files):
     df, nb_strains, read_dict = parsed_files
 
-    dd, strains = process_df(df, hapq_cut=15, sp_cut=0.9, nb_strains=nb_strains)
+    dd, strains = process_df(df, hapq_cut=15, sp_cut=0.9, nb_strains=nb_strains, basename="test")
 
     assert isinstance(strains, list)
     assert len(strains) == 2

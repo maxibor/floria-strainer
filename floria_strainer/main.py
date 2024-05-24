@@ -14,7 +14,7 @@ from floria_strainer.parser import (
 )
 
 
-def parse_files(floria_outdir: str) -> tuple[pd.DataFrame, int, dict]:
+def parse_files(floria_outdir: str, hapq_cut: int) -> tuple[pd.DataFrame, int, dict]:
 
     cp = parse_floria_contig_ploidy(
         os.path.join(floria_outdir, "contig_ploidy_info.tsv")
@@ -31,7 +31,7 @@ def parse_files(floria_outdir: str) -> tuple[pd.DataFrame, int, dict]:
     ]
 
     parsed_haplosets = [
-        parse_haplosets(haplosets_file) for haplosets_file in haplosets_files
+        parse_haplosets(haplosets_file, hapq_cut=hapq_cut) for haplosets_file in haplosets_files
     ]
 
     haplosets, read_dicts = zip(*parsed_haplosets)
@@ -92,7 +92,7 @@ def compute_gmm(obs: np.array, n_components: int) -> tuple[np.array, np.array]:
     return labels, max_proba
 
 
-def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int) -> dict:
+def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int, basename: str) -> dict:
     """
     Process the DataFrame to get the strains.
 
@@ -106,6 +106,8 @@ def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int) 
         The clustering probability support cut-off to use.
     nb_strains : int
         The number of strains to use. Use 0 to automatically select the best number of strains.
+    basename : str
+        The basename to use for the output files.
 
     Returns
     -------
@@ -153,6 +155,10 @@ def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int) 
         .reset_index()
         .assign(strain=lambda df: df["strain"].apply(round))
     )
+
+    csv_out = f"{basename}.strained.csv"
+    logger.info(f"Writing the straining informations to {csv_out}.")
+    df3.set_index("haploset").groupby("contig").apply(lambda x: x["strain"].to_dict()).to_csv(csv_out, index=False)
 
     return (
         df3.set_index("haploset")
@@ -215,7 +221,7 @@ def write_bam_split(
 
 def write_bam(inbam: str, outbam: str, haplostrain: dict, read_dict: dict) -> None:
     """
-    Write the BAM files for each strain.
+    Write the BAM files with ST tag.
 
     Parameters
     ----------
@@ -259,11 +265,11 @@ def strainer(
     mode: str,
     basename: str,
 ):
-    fl_df, fl_nb_strains, read_dict = parse_files(floria_outdir)
+    fl_df, fl_nb_strains, read_dict = parse_files(floria_outdir, hapq_cut)
     if nb_strains == 0:
         nb_strains = fl_nb_strains
     fl_processed, strains = process_df(
-        df=fl_df, hapq_cut=hapq_cut, sp_cut=sp_cut, nb_strains=nb_strains
+        df=fl_df, hapq_cut=hapq_cut, sp_cut=sp_cut, nb_strains=nb_strains, basename=basename
     )
 
     logger.info(
