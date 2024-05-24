@@ -10,7 +10,7 @@ floria_out_dir = os.path.join(data_dir, "floria_out_dir")
 
 @pytest.fixture(scope="module")
 def parsed_files():
-    df, nb_strains, read_dict = parse_files(floria_out_dir)
+    df, nb_strains, read_dict = parse_files(floria_out_dir, hapq_cut=15)
     return df, nb_strains, read_dict
 
 
@@ -32,7 +32,7 @@ def test_parse_files(parsed_files):
     assert df.shape == (2522, 7)
     assert nb_strains == 2
     assert "NZ_CP081897.1" in read_dict
-    assert len(read_dict["NZ_CP081897.1"]) == 20592
+    assert len(read_dict["NZ_CP081897.1"]) == 21579
     assert "NZ_CP081897.1-865804" in read_dict["NZ_CP081897.1"]
     assert "NZ_CP081894.1-245850" in read_dict["NZ_CP081897.1"]
     assert "NZ_CP081896.1-334880" not in read_dict["NZ_CP081897.1"]
