@@ -44,7 +44,7 @@ from floria_strainer import __version__, __author__
 @click.option(
     "-o",
     "--basename",
-    help="Output file basanem",
+    help="Output file basaneme",
     type=str,
     required=True,
     default="floria_strained",

@@ -157,7 +157,7 @@ def process_df(df: pd.DataFrame, hapq_cut: int, sp_cut: float, nb_strains: int, 
     )
 
     csv_out = f"{basename}.strained.csv"
-    logger.info(f"Writing the straining informations to {csv_out}.")
+    logger.info(f"Writing the straining informations to {csv_out}")
     df3.set_index("haploset").groupby("contig").apply(lambda x: x["strain"].to_dict()).to_csv(csv_out, index=False)
 
     return (
@@ -234,7 +234,7 @@ def write_bam(inbam: str, outbam: str, haplostrain: dict, read_dict: dict) -> No
     read_dict : dict
         The read dictionary with the references as keys for the reads as keys, and the haplotag as value.
     """
-    logger.info(f"Writing the BAM file in tag mode to {outbam}.")
+    logger.info(f"Writing the BAM file in tag mode to {outbam}")
     no_haploset = False
     with pysam.AlignmentFile(inbam, "rb") as bam:
         with pysam.AlignmentFile(outbam, "wb", template=bam) as outbam:
