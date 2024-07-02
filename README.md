@@ -29,9 +29,20 @@ INFO - 2 strains were found: 0, 1
 INFO - Writing the BAM file in tag mode to floria_strained.bam.
 ```
 
-## Visualizing the strain clustering
+## Visualizing the strain clustering method
 
-floria-strainer takes the output of floria-strainer, with reads having been assigned to a haploset (fig 2). Based on the average allele frequency of each haploset, reads are clustered in the different strains. In this example (fig 3), there are two strains of minor and major allele frequency, which floria-strainer clustered in strain 0 and strain 1.
+
+- In this example, short-reads are aligned to a reference genome (fig 1). At each variable position, we can observe a 2 different alleles, which in the case of this haploid organism, corresponds to a mixture of 2 different strains.
+
+- floria-strainer takes the output of floria, with reads having been assigned to a haploset (fig 2) based on the MEC criteria. <details>
+  <summary>Expand to see a high level overview of floria</summary>
+  
+  The haplotyping process floria is conceptually similar to the one of *de novo* assembly of reads into contigs, where instead of contigs, read haplosets are the results of the flow (ie. least costly path) optimization through the different reads represented as a graph. More details in the floria article [^1].
+</details>
+  
+
+- Based on the average allele frequency of each haploset, reads are clustered in the different strains. In this example (fig 3), there are two strains of minor and major allele frequency, which floria-strainer clustered in strain 0 and strain 1.
+
 Reads that weren't assigned to any haploset by floria, or whose haploset do not cluster well enough are not assigned to any strain. They are considered to be shared by the different strains present in the alignment.
 
 <img src="assets/img/igv_no_tag.png" width=70%>  
@@ -49,7 +60,7 @@ Fig 3: Reads are grouped and colored by the `ST` **STrain** tag as annotated by 
 ## Help
 
 ```bash
-$ floria-strainer --help
+$floria-strainer --help
                                                                                                                                                                             
  Usage: floria-strainer [OPTIONS] FLORIA_OUTDIR                                                                                                                             
                                                                                                                                                                             
@@ -64,7 +75,7 @@ $ floria-strainer --help
 │    --sp-cut      -s  FLOAT        Minimum strain clustering probability threshold [default: 0.5]                                                                         │
 │ *  --bam         -b  PATH         Input BAM file [required]                                                                                                              │
 │    --mode        -m  [tag|split]  BAM output mode. Tag: add ST (strain) tags to the reads. Split: split the reads in different BAM files per strain. [default: tag]      │
-│ *  --basename    -o  TEXT         Output file basanem [default: floria_strained] [required]                                                                              │
+│ *  --basename    -o  TEXT         Output file basaneme [default: floria_strained] [required]                                                                             │
 │    --help                         Show this message and exit.                                                                                                            │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -76,4 +87,4 @@ $ pip install poetry pytest
 $ poetry run pytest -vv
 ```
 
-[^1]: [Floria: Fast and accurate strain haplotyping in metagenomes](https://www.biorxiv.org/content/10.1101/2024.01.28.577669v1.full) 
+[^1]: [Floria: fast and accurate strain haplotyping in metagenomes](https://doi.org/10.1093/bioinformatics/btae252) 
