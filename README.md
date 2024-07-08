@@ -1,7 +1,7 @@
 <p align="center">
     <a href="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"><img src="https://github.com/maxibor/floria-strainer/actions/workflows/ci.yaml/badge.svg"></a>
     <br>
-   <img src="assets/img/floria_strainer_logo.png" width="400">
+   <img src="https://github.com/maxibor/floria-strainer/raw/master/assets/img/floria_strainer_logo.png" width="400">
 </p>
 
 ---
@@ -45,15 +45,15 @@ INFO - Writing the BAM file in tag mode to floria_strained.bam.
 
 Reads that weren't assigned to any haploset by floria, or whose haploset do not cluster well enough are not assigned to any strain. They are considered to be shared by the different strains present in the alignment.
 
-<img src="assets/img/igv_no_tag.png" width=70%>  
+<img src="https://github.com/maxibor/floria-strainer/raw/master/assets/img/igv_no_tag.png" width=70%>  
 
 Fig 1: Reads aligned to the reference genome, visualized in IGV. The top track represents the reference genome, with variants indicated in the different colors.
 
-<img src="assets/img/igv_hp_tag.png" width=70%>  
+<img src="https://github.com/maxibor/floria-strainer/raw/master/assets/img/igv_hp_tag.png" width=70%>  
 
 Fig 2: Reads are grouped and colored by the `HP` **HaPloset** tag as annotated by Floria.
 
-<img src="assets/img/igv_st_tag.png" width=70%>  
+<img src="https://github.com/maxibor/floria-strainer/raw/master/assets/img/igv_st_tag.png" width=70%>  
 
 Fig 3: Reads are grouped and colored by the `ST` **STrain** tag as annotated by floria-strainer.
 
