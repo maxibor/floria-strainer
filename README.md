@@ -15,7 +15,7 @@ Given the output of the strain haplotyping software [floria](https://github.com/
 ## Install
 
 ```bash
-pip install git+https://github.com/maxibor/floria-strainer.git
+pip install floria-strainer
 ```
 
 ## Quick start
@@ -81,6 +81,8 @@ $floria-strainer --help
 ```
 
 ## Tests
+
+After cloning/pulling repo
 
 ```bash
 $ pip install poetry pytest
