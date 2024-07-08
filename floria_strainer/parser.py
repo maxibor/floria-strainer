@@ -1,5 +1,5 @@
 import pandas as pd
-
+from floria_strainer import logger
 
 def parse_haplosets(filename: str, hapq_cut: int = 15) -> tuple[dict, dict]:
     """
@@ -26,6 +26,7 @@ def parse_haplosets(filename: str, hapq_cut: int = 15) -> tuple[dict, dict]:
     haqp_sup = False
     read_dict = {}
     with open(filename, "r") as f:
+        logger.info(f"Reading the haplosets file {filename}")
         for line in f:
             if line.startswith(">"):
                 lsplit = line.rstrip()[1:].split("\t")
@@ -69,6 +70,7 @@ def parse_vartig_info(filename: str) -> dict:
         "support": [],
     }
     with open(filename, "r") as f:
+        logger.info(f"Reading the vartig_info file {filename}")
         for line in f:
             if line.startswith(">"):
                 lsplit = line.rstrip()[1:].split("\t")

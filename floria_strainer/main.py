@@ -21,7 +21,10 @@ def parse_files(floria_outdir: str, hapq_cut: int) -> tuple[pd.DataFrame, int, d
     )
 
     contigs = cp["contig"].unique().tolist()
-    nb_strains = round(cp["average_straincount_min15hapq"].mean())
+    if hapq_cut < 15:
+        nb_strains = round(cp["average_straincount"].mean())
+    else:
+        nb_strains = round(cp["average_straincount_min15hapq"].mean())
 
     haplosets_files = [
         os.path.join(floria_outdir, contig, f"{contig}.haplosets") for contig in contigs
@@ -33,16 +36,18 @@ def parse_files(floria_outdir: str, hapq_cut: int) -> tuple[pd.DataFrame, int, d
     parsed_haplosets = [
         parse_haplosets(haplosets_file, hapq_cut=hapq_cut) for haplosets_file in haplosets_files
     ]
-
     haplosets, read_dicts = zip(*parsed_haplosets)
 
     parsed_vartig_info = [
         parse_vartig_info(vartig_info_file) for vartig_info_file in vartig_info_files
     ]
+    
+    
 
-    haplosets_df = pd.DataFrame.from_dict(dict(ChainMap(*haplosets)))
-    vartig_info_df = pd.DataFrame.from_dict(dict(ChainMap(*parsed_vartig_info)))
+    haplosets_df = pd.concat([pd.DataFrame.from_dict(haploset) for haploset in haplosets])
+    vartig_info_df = pd.concat([pd.DataFrame.from_dict(vartig_info) for vartig_info in parsed_vartig_info])
     read_dict = dict(ChainMap(*read_dicts))
+
 
     df = pd.merge(haplosets_df, vartig_info_df, on=["contig", "haploset"])
 
