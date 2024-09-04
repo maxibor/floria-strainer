@@ -29,7 +29,7 @@ INFO - 2 strains were found: 0, 1
 INFO - Writing the BAM file in tag mode to floria_strained.bam.
 ```
 
-## Running floria and floria-strainer on your date
+## Running floria and floria-strainer on your own data
 
 ### 1. Variant calling 
 
