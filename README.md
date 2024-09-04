@@ -37,18 +37,18 @@ The floria authors [recommend](https://phase-doc.readthedocs.io/en/latest/how-to
 
 ```bash
 freebayes \
-	-f reference.fa \
-	--pooled-continuous \
-	alignment.bam > freevayes_output.vcf
+-f reference.fa \
+--pooled-continuous \
+alignment.bam > freevayes_output.vcf
 ```
 
 ### 2. Running floria
 
 ```bash
 floria \
-	-b alignment.bam \
-	-v freevayes_output.vcf \
-	-r reference.fa \
+-b alignment.bam \
+-v freevayes_output.vcf \
+-r reference.fa
 ```
 
 The floria output will be written by default to the `floria_out_dir` directory
@@ -60,9 +60,9 @@ The floria output will be written by default to the `floria_out_dir` directory
 
 ```bash
 floria-strainer \
-	--bam alignment.bam \
-	-m tag \
-	floria_out_dir 
+--bam alignment.bam \
+-m tag \
+floria_out_dir 
 ```
 
 floria-stainer in the `tag` mode will produce a bam file (by default, `floria_strained.bam`) which contains the strain-phasing information in the `ST` tag, and the haploset information in the `HP` tag.
@@ -71,9 +71,9 @@ floria-stainer in the `tag` mode will produce a bam file (by default, `floria_st
 
 ```bash
 floria-strainer \
-	--bam alignment.bam \
-	-m split \
-	floria_out_dir 
+--bam alignment.bam \
+-m split \
+floria_out_dir 
 ```
 
 floria-stainer in the `split` mode will produce one bam file per detected strain (by default `floria_strained.{strain_number}.bam`). Reads not being part of clustered to a specific strain will be written to all bam files.
@@ -114,42 +114,42 @@ In the case of very short DNA fragments typically observed in aDNA samples, the 
 
 ```bash
 freebayes \
-	-f reference.fa \
-	--min-base-quality 20 \
-	--min-mapping-quality 30 \
-	--min-coverage 6 \
-	--limit-coverage 30 \
-	--pooled-continuous \
-	--use-best-n-alleles 3 \
-  alignment.bam > freebayes_output.vcf
+-f reference.fa \
+--min-base-quality 20 \
+--min-mapping-quality 30 \
+--min-coverage 6 \
+--limit-coverage 30 \
+--pooled-continuous \
+--use-best-n-alleles 3 \
+alignment.bam > freebayes_output.vcf
 ```
 
 #### For floria
 
 ```bash
 floria \
-	-b alignment.bam \
-  -r reference.fa \
-	-v freebayes_output.vcf \
-	--snp-density 0.00001 \
-	--snp-count-filter 10 \
-	--ploidy-sensitivity 3 \
-	--threads 20
+-b alignment.bam \
+-r reference.fa \
+-v freebayes_output.vcf \
+--snp-density 0.00001 \
+--snp-count-filter 10 \
+--ploidy-sensitivity 3 \
+--threads 20
 ```
 
 #### For floria-strainer (in `tag` or `split` mode)
 
 ```bash
 floria-strainer \
-	--bam alignment.bam \
-	--hapq-cut 0 \
-	floria_out_dir
+--bam alignment.bam \
+--hapq-cut 0 \
+floria_out_dir
 ```
 
 ## Help
 
 ```bash
-$floria-strainer --help
+$ floria-strainer --help
                                                                                                                                                                             
  Usage: floria-strainer [OPTIONS] FLORIA_OUTDIR                                                                                                                             
                                                                                                                                                                             
