@@ -150,23 +150,22 @@ floria_out_dir
 
 ```bash
 $ floria-strainer --help
-                                                                                                                                                                            
- Usage: floria-strainer [OPTIONS] FLORIA_OUTDIR                                                                                                                             
-                                                                                                                                                                            
- Strain the haplotypes in the floria output directory.                                                                                                                      
- Author: Maxime Borry                                                                                                                                                       
-                                                                                                                                                                            
-╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│    --version                      Show the version and exit.                                                                                                             │
-│    --nb-strains  -n  INTEGER      Number of strains to keep. If 0, the number of strains will be determined by the mean floria average strain count with HAPQ > 15.      │
-│                                   [default: 0]                                                                                                                           │
-│    --hapq-cut    -h  INTEGER      Minimum HAPQ threshold [default: 15]                                                                                                   │
-│    --sp-cut      -s  FLOAT        Minimum strain clustering probability threshold [default: 0.5]                                                                         │
-│ *  --bam         -b  PATH         Input BAM file [required]                                                                                                              │
-│    --mode        -m  [tag|split]  BAM output mode. Tag: add ST (strain) tags to the reads. Split: split the reads in different BAM files per strain. [default: tag]      │
-│ *  --basename    -o  TEXT         Output file basaneme [default: floria_strained] [required]                                                                             │
-│    --help                         Show this message and exit.                                                                                                            │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                                                                                                     
+ Usage: floria-strainer [OPTIONS] FLORIA_OUTDIR                                                                                                                                                                      
+                                                                                                                                                                                                                     
+ Strain the haplotypes in the floria output directory.                                                                                                                                                               
+ Author: Maxime Borry                                                                                                                                                                                                
+                                                                                                                                                                                                                     
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│    --version                      Show the version and exit.                                                                                                                                                      │
+│    --nb-strains  -n  INTEGER      Number of strains to keep. If 0, the number of strains will be determined by the mean floria average strain count with HAPQ > HAPQ treshold [default: 0]                        │
+│    --hapq-cut    -h  INTEGER      Minimum HAPQ threshold [default: 15]                                                                                                                                            │
+│    --sp-cut      -s  FLOAT        Minimum strain clustering probability threshold [default: 0.5]                                                                                                                  │
+│ *  --bam         -b  PATH         Input BAM file [required]                                                                                                                                                       │
+│    --mode        -m  [tag|split]  BAM output mode. Tag: add ST (strain) tags to the reads. Split: split the reads in different BAM files per strain. [default: tag]                                               │
+│ *  --basename    -o  TEXT         Output file basaneme [default: floria_strained] [required]                                                                                                                      │
+│    --help                         Show this message and exit.                                                                                                                                                     │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Tests

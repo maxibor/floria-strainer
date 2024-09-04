@@ -9,7 +9,7 @@ from floria_strainer import __version__, __author__
 @click.option(
     "-n",
     "--nb-strains",
-    help="Number of strains to keep. If 0, the number of strains will be determined by the mean floria average strain count with HAPQ > HAPQ treshold.",
+    help="Number of strains to keep. If 0, the number of strains will be determined by the mean floria average strain count with HAPQ > HAPQ treshold",
     type=int,
     default=0,
     show_default=True,
