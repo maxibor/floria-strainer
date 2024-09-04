@@ -89,7 +89,7 @@ def compute_gmm(obs: np.array, n_components: int) -> tuple[np.array, np.array]:
         n_components = best_comp
 
     elif n_components < 2:
-        raise ValueError("The number of components must be at least 2.")
+        raise ValueError("The number of components/strains/phases must be at least 2.")
     gmm = GaussianMixture(n_components=n_components, random_state=42)
     gmm.fit(obs)
     labels = gmm.predict(obs)

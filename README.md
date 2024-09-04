@@ -29,6 +29,55 @@ INFO - 2 strains were found: 0, 1
 INFO - Writing the BAM file in tag mode to floria_strained.bam.
 ```
 
+## Running floria and floria-strainer on your date
+
+### 1. Variant calling 
+
+The floria authors [recommend](https://phase-doc.readthedocs.io/en/latest/how-to-guides/htg3.html#short-reads) [freebayes](https://github.com/freebayes/freebayes)[^2] to call the variants from your alignment files. In this step, Freebayes is used in "naive" mode, just to count all the "alleles" present at each variable position, using the `--pooled-continous` option.
+
+```bash
+freebayes \
+	-f reference.fa \
+	--pooled-continuous \
+	alignment.bam > freevayes_output.vcf
+```
+
+### 2. Running floria
+
+```bash
+floria \
+	-b alignment.bam \
+	-v freevayes_output.vcf \
+	-r reference.fa \
+```
+
+The floria output will be written by default to the `floria_out_dir` directory
+
+### 3. Running floria-strainer 
+
+
+#### floria-strainer `tag` mode
+
+```bash
+floria-strainer \
+	--bam alignment.bam \
+	-m tag \
+	floria_out_dir 
+```
+
+floria-stainer in the `tag` mode will produce a bam file (by default, `floria_strained.bam`) which contains the strain-phasing information in the `ST` tag, and the haploset information in the `HP` tag.
+
+#### floria-strainer `split` mode
+
+```bash
+floria-strainer \
+	--bam alignment.bam \
+	-m split \
+	floria_out_dir 
+```
+
+floria-stainer in the `split` mode will produce one bam file per detected strain (by default `floria_strained.{strain_number}.bam`). Reads not being part of clustered to a specific strain will be written to all bam files.
+
 ## Visualizing the strain clustering method
 
 
@@ -56,6 +105,46 @@ Fig 2: Reads are grouped and colored by the `HP` **HaPloset** tag as annotated b
 <img src="https://github.com/maxibor/floria-strainer/raw/master/assets/img/igv_st_tag.png" width=70%>  
 
 Fig 3: Reads are grouped and colored by the `ST` **STrain** tag as annotated by floria-strainer.
+
+## Working with Ancient DNA (aDNA)
+
+In the case of very short DNA fragments typically observed in aDNA samples, the following parameter set have been found to work well. Tweak them for your own needs, and experiment as needed:
+
+#### For freebayes variant-calling
+
+```bash
+freebayes \
+	-f reference.fa \
+	--min-base-quality 20 \
+	--min-mapping-quality 30 \
+	--min-coverage 6 \
+	--limit-coverage 30 \
+	--pooled-continuous \
+	--use-best-n-alleles 3 \
+  alignment.bam > freebayes_output.vcf
+```
+
+#### For floria
+
+```bash
+floria \
+	-b alignment.bam \
+  -r reference.fa \
+	-v freebayes_output.vcf \
+	--snp-density 0.00001 \
+	--snp-count-filter 10 \
+	--ploidy-sensitivity 3 \
+	--threads 20
+```
+
+#### For floria-strainer (in `tag` or `split` mode)
+
+```bash
+floria-strainer \
+	--bam alignment.bam \
+	--hapq-cut 0 \
+	floria_out_dir
+```
 
 ## Help
 
@@ -90,3 +179,4 @@ $ poetry run pytest -vv
 ```
 
 [^1]: [Floria: fast and accurate strain haplotyping in metagenomes](https://doi.org/10.1093/bioinformatics/btae252) 
+[^2]: [Haplotype-based variant detection from short-read sequencing](https://doi.org/10.48550/arXiv.1207.3907)
